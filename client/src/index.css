@@ -1,0 +1,93 @@
+/* Global base styles — theme CssBaseline adds atmosphere */
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+/* Horizontal scroll helpers for dense tables on small screens */
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 600px) {
+  .hide-xs {
+    display: none !important;
+  }
+}
+
+/* Ensure MUI OutlinedInput labels never merge or collapse with input content */
+.MuiInputLabel-root {
+  pointer-events: none;
+}
+
+.MuiInputLabel-root.MuiInputLabel-shrink {
+  pointer-events: auto;
+}
+
+/* When an input has text or autofill, ensure label is elevated */
+.MuiFormControl-root:has(input:not(:placeholder-shown)) > .MuiInputLabel-root,
+.MuiFormControl-root:has(input:-webkit-autofill) > .MuiInputLabel-root {
+  transform: translate(14px, -9px) scale(0.75) !important;
+}
+
+/* Standalone error animations */
+@keyframes errorFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes errorGlow {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes errorFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.error-float {
+  animation: errorFloat 4s ease-in-out infinite;
+}
+
+.error-glow {
+  animation: errorGlow 3s ease-in-out infinite;
+}
+
+.error-card-anim {
+  animation: errorFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+

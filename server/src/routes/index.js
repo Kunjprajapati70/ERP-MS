@@ -1,0 +1,46 @@
+const express = require('express');
+const healthRoutes = require('./health.routes');
+const authRoutes = require('./auth.routes');
+const userRoutes = require('./user.routes');
+const roleRoutes = require('./role.routes');
+const notificationRoutes = require('./notification.routes');
+const auditRoutes = require('./audit.routes');
+const categoryRoutes = require('./category.routes');
+const warehouseRoutes = require('./warehouse.routes');
+const productRoutes = require('./product.routes');
+const customerRoutes = require('./customer.routes');
+const supplierRoutes = require('./supplier.routes');
+const purchaseOrderRoutes = require('./purchaseOrder.routes');
+const grnRoutes = require('./grn.routes');
+
+const router = express.Router();
+
+router.use('/health', healthRoutes);
+router.use('/auth', authRoutes);
+router.use('/users', userRoutes);
+router.use('/roles', roleRoutes);
+router.use('/notifications', notificationRoutes);
+router.use('/audit-logs', auditRoutes);
+router.use('/categories', categoryRoutes);
+router.use('/warehouses', warehouseRoutes);
+router.use('/products', productRoutes);
+router.use('/customers', customerRoutes);
+router.use('/customer', require('./customerPortal.routes'));
+router.use('/suppliers', supplierRoutes);
+router.use('/purchase-orders', purchaseOrderRoutes);
+router.use('/grns', grnRoutes);
+router.use('/sales-orders', require('./salesOrder.routes'));
+router.use('/invoices', require('./invoice.routes'));
+router.use('/payments', require('./payment.routes'));
+router.use('/dashboard', require('./dashboard.routes'));
+router.use('/reports', require('./report.routes'));
+router.use('/leads', require('./lead.routes'));
+router.use('/employees', require('./employee.routes'));
+router.use('/leave-requests', require('./leave.routes'));
+router.use('/boms', require('./bom.routes'));
+router.use('/work-orders', require('./workOrder.routes'));
+router.use('/attendance', require('./attendance.routes'));
+router.use('/payroll', require('./payroll.routes'));
+router.use('/qc-inspections', require('./qc.routes'));
+
+module.exports = router;
