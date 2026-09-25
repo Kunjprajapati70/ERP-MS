@@ -25,14 +25,23 @@ function isAllowedCorsOrigin(origin) {
   if (allowed.includes('*')) return true;
   if (allowed.includes(origin)) return true;
   if (origin === config.clientUrl) return true;
-  if (config.corsAllowVercelPreviews) {
-    try {
-      const { hostname } = new URL(origin);
-      if (hostname.endsWith('.vercel.app')) return true;
-    } catch (_) {
-      return false;
+
+  try {
+    const { hostname, port } = new URL(origin);
+    const isLocalHost = hostname === 'localhost' || hostname === '127.0.0.1';
+    if (!config.isProduction && isLocalHost) {
+      return true;
     }
+    if (config.corsAllowVercelPreviews && hostname.endsWith('.vercel.app')) {
+      return true;
+    }
+    if (isLocalHost && ['5173', '5174', '4173'].includes(port)) {
+      return true;
+    }
+  } catch (_) {
+    return false;
   }
+
   return false;
 }
 

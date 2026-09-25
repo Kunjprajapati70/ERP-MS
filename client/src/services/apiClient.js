@@ -10,7 +10,7 @@ const FATAL_AUTH_CODES = new Set([
 ]);
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1',
+  baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1',
   timeout: 45000,
   headers: {
     'Content-Type': 'application/json',
