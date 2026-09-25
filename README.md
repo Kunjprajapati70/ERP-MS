@@ -138,17 +138,18 @@ Deploy the API first, then the web app, so the frontend can point at a live `VIT
 | `CLIENT_URL` | `https://kunj-erp.vercel.app` |
 | `CORS_ORIGIN` | `https://kunj-erp.vercel.app` |
 | `CORS_ALLOW_VERCEL_PREVIEWS` | `true` |
-| `SMTP_HOST` | `smtp.gmail.com` |
-| `SMTP_PORT` | `587` |
-| `SMTP_USER` | your Gmail address |
-| `SMTP_PASSWORD` | Gmail **App Password** (16 letters, no spaces) |
 | `MAIL_FROM` | `ERP Admin <yourgmail@gmail.com>` |
+| `SMTP_HOST` | `smtp.gmail.com` (localhost only) |
+| `SMTP_PORT` | `587` |
+| `SMTP_USER` | Gmail address |
+| `SMTP_PASSWORD` | Gmail App Password |
+| `BREVO_API_KEY` | required on **Render free** |
 
-`server/.env` is **not** uploaded to Render. If SMTP vars are missing there, creating a user still works but **no email is sent** (`GET /api/v1/health` → `data.smtp.configured` should be `true`).
+**Localhost:** SMTP works. In `server/` run `npm run mail:test`. Check that Gmail inbox (and Spam). Use a 16-character App Password, not your Gmail login password.
 
-Gmail: Google Account → Security → 2-Step Verification → App passwords. Paste that into `SMTP_PASSWORD`. Check Spam/Promotions. After saving env vars, **restart** the Render service.
+**Render free:** Gmail SMTP is blocked ([changelog](https://render.com/changelog/free-web-services-will-no-longer-allow-outbound-traffic-to-smtp-ports)). Set `BREVO_API_KEY` from [Brevo](https://www.brevo.com), verify `MAIL_FROM` as a sender, restart. Health should show `"transport":"brevo"`.
 
-Creating a CRM customer (Operations → Customers) only saves a party record — it does **not** create a login or send mail. Emails go out when you create a **User** (or a customer self-registers).
+Creating a CRM customer (Operations → Customers) does **not** send mail. Emails go out for **Users → Add user**, **Test email**, and customer self-register.
 
 ### 2. Vercel — frontend (`client/`)
 

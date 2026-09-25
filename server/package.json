@@ -10,6 +10,7 @@
     "seed": "node scripts/seed.js",
     "seed:bulk": "node scripts/seedBulk.js",
     "seed:images": "node scripts/backfillProductImages.js",
+    "mail:test": "node scripts/test-mail.js",
     "test": "jest --runInBand --forceExit"
   },
   "engines": {

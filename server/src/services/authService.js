@@ -6,7 +6,6 @@ const { createPasswordResetToken, hashToken } = require('../utils/tokens');
 const { sendEmail } = require('./mailService');
 const { writeAuditLog } = require('./auditService');
 const config = require('../config/env');
-const logger = require('../utils/logger');
 const {
   welcomeEmailTemplate,
   passwordResetEmailTemplate,
@@ -84,6 +83,7 @@ async function registerUser(payload, req) {
     req,
   });
 
+  // Fire-and-forget welcome email
   sendEmail({
     to: user.email,
     subject: 'Welcome to Enterprise ERP',
@@ -91,7 +91,7 @@ async function registerUser(payload, req) {
       name: user.fullName,
       loginUrl: `${config.clientUrl}/login`,
     }),
-  }).catch((error) => logger.error('Welcome email failed', { message: error.message }));
+  });
 
   return buildAuthPayload(user);
 }

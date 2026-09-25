@@ -133,6 +133,7 @@ async function createUser(payload, actor, req) {
       email: user.email,
       skipped: Boolean(emailResult?.skipped),
       failed: Boolean(emailResult?.failed),
+      error: emailResult?.error,
     });
   }
 
@@ -142,6 +143,8 @@ async function createUser(payload, actor, req) {
       sent: Boolean(emailResult && !emailResult.skipped && !emailResult.failed),
       skipped: Boolean(emailResult?.skipped),
       failed: Boolean(emailResult?.failed),
+      error: emailResult?.error || undefined,
+      transport: emailResult?.transport,
     },
   };
 }
@@ -227,10 +230,33 @@ async function deleteUser(id, actor, req) {
   return { id };
 }
 
+async function sendTestEmail(to) {
+  if (!to) {
+    throw AppError.badRequest('A destination email is required', 'EMAIL_REQUIRED');
+  }
+
+  const result = await sendEmail({
+    to,
+    subject: 'Enterprise ERP test email',
+    html: '<p>This is a test email from Enterprise ERP. If you received it, mail delivery is working.</p>',
+    text: 'This is a test email from Enterprise ERP. If you received it, mail delivery is working.',
+  });
+
+  return {
+    sent: Boolean(result && !result.skipped && !result.failed),
+    skipped: Boolean(result?.skipped),
+    failed: Boolean(result?.failed),
+    error: result?.error,
+    transport: result?.transport,
+    to,
+  };
+}
+
 module.exports = {
   listUsers,
   getUserById,
   createUser,
   updateUser,
   deleteUser,
+  sendTestEmail,
 };

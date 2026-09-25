@@ -10,6 +10,11 @@ export async function fetchUser(id) {
   return data;
 }
 
+export async function sendTestEmail(to) {
+  const { data } = await apiClient.post('/users/test-email', { to });
+  return data;
+}
+
 export async function createUser(payload) {
   const { data } = await apiClient.post('/users', payload);
   return data;

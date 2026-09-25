@@ -16,8 +16,10 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { useForm } from 'react-hook-form';
+import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import PageHeader from '../../components/PageHeader';
 import LoadingSkeleton from '../../components/LoadingSkeleton';
@@ -29,6 +31,7 @@ import {
   createUser,
   deleteUser,
   fetchUsers,
+  sendTestEmail,
   updateUser,
 } from '../../services/userService';
 import { fetchRoles } from '../../services/roleService';
@@ -59,6 +62,8 @@ export default function UsersPage() {
   const [formError, setFormError] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [testingEmail, setTestingEmail] = useState(false);
+  const currentUser = useSelector((state) => state.auth.user);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
     defaultValues: emptyForm,
@@ -154,7 +159,7 @@ export default function UsersPage() {
           toast.success('User created');
           toast.warning(
             result.message ||
-              'Credentials email was not sent. Add SMTP_HOST, SMTP_USER, SMTP_PASSWORD, and MAIL_FROM on Render, then restart the API.'
+              'Credentials email was not sent. On localhost run npm run mail:test in server/. On Render free, add BREVO_API_KEY.'
           );
         }
       }
@@ -167,6 +172,23 @@ export default function UsersPage() {
       setFormError(detailMsg || err.message || 'Save failed');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleTestEmail = async () => {
+    const to = currentUser?.email;
+    if (!to) {
+      toast.error('Sign in again, then retry the test email.');
+      return;
+    }
+    setTestingEmail(true);
+    try {
+      const result = await sendTestEmail(to);
+      toast.success(result.message || `Test email sent to ${to}`);
+    } catch (err) {
+      toast.error(err.message || 'Test email failed');
+    } finally {
+      setTestingEmail(false);
     }
   };
 
@@ -241,6 +263,14 @@ export default function UsersPage() {
           <Stack direction="row" spacing={1}>
             <Button startIcon={<RefreshIcon />} variant="outlined" onClick={load}>
               Refresh
+            </Button>
+            <Button
+              startIcon={<MailOutlineIcon />}
+              variant="outlined"
+              onClick={handleTestEmail}
+              disabled={testingEmail}
+            >
+              {testingEmail ? 'Sending…' : 'Test email'}
             </Button>
             <Button startIcon={<AddIcon />} variant="contained" onClick={openCreate}>
               Add user

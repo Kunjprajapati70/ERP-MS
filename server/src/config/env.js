@@ -36,6 +36,8 @@ const config = {
     password: getEnv('SMTP_PASSWORD', ''),
     from: getEnv('MAIL_FROM', getEnv('SMTP_USER', 'ERP System <noreply@example.com>')),
   },
+  resendApiKey: getEnv('RESEND_API_KEY', ''),
+  brevoApiKey: getEnv('BREVO_API_KEY', ''),
   payment: {
     keyId: getEnv('PAYMENT_KEY_ID', ''),
     keySecret: getEnv('PAYMENT_KEY_SECRET', ''),

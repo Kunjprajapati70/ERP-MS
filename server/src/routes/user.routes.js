@@ -13,6 +13,7 @@ const router = express.Router();
 router.use(authenticateUser);
 
 router.get('/', authorizePermissions('users:read'), userController.list);
+router.post('/test-email', authorizePermissions('users:write'), userController.testEmail);
 router.get('/:id', authorizePermissions('users:read'), userController.getById);
 router.post('/', authorizePermissions('users:write'), validate(createUserSchema), userController.create);
 router.patch('/:id', authorizePermissions('users:write'), validate(updateUserSchema), userController.update);

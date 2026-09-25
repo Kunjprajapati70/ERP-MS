@@ -22,6 +22,7 @@ describe('GET /api/v1/health', () => {
     expect(res.body.data).toHaveProperty('database');
     expect(res.body.data).toHaveProperty('smtp');
     expect(typeof res.body.data.smtp.configured).toBe('boolean');
+    expect(res.body.data.smtp).toHaveProperty('transport');
   });
 });
 

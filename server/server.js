@@ -3,7 +3,7 @@ const config = require('./src/config/env');
 const { connectDatabase, disconnectDatabase } = require('./src/config/db');
 const logger = require('./src/utils/logger');
 const { freePort } = require('./src/utils/freePort');
-const { isSmtpConfigured } = require('./src/services/mailService');
+const { isMailConfigured, getMailTransport } = require('./src/services/mailService');
 
 let server;
 let shuttingDown = false;
@@ -62,11 +62,17 @@ async function start() {
     const port = typeof address === 'object' && address ? address.port : config.port;
     logger.info(`ERP API listening on port ${port} [${config.nodeEnv}]`);
     logger.info(`Health check: http://localhost:${port}/api/v1/health`);
-    if (isSmtpConfigured()) {
-      logger.info('SMTP is configured — welcome and credentials emails will be sent');
+    const mailTransport = getMailTransport();
+    if (isMailConfigured()) {
+      logger.info(`Mail delivery is enabled via ${mailTransport}`);
+      if (mailTransport === 'smtp' && config.isProduction) {
+        logger.warn(
+          'Using SMTP in production. Render free web services block ports 25/465/587 — set BREVO_API_KEY or RESEND_API_KEY instead.'
+        );
+      }
     } else {
       logger.warn(
-        'SMTP is not configured. User/customer emails will be skipped. Set SMTP_HOST, SMTP_USER, SMTP_PASSWORD, and MAIL_FROM on the host (Render), then restart.'
+        'Mail is not configured. Set SMTP_* in server/.env for localhost, or BREVO_API_KEY / RESEND_API_KEY on Render.'
       );
     }
   } catch (error) {
