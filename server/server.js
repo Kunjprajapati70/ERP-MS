@@ -2,8 +2,46 @@ const app = require('./app');
 const config = require('./src/config/env');
 const { connectDatabase, disconnectDatabase } = require('./src/config/db');
 const logger = require('./src/utils/logger');
+const { freePort } = require('./src/utils/freePort');
 
 let server;
+let shuttingDown = false;
+
+function listen(port) {
+  return new Promise((resolve, reject) => {
+    const httpServer = app.listen(port);
+    const onError = (error) => {
+      httpServer.removeListener('listening', onListening);
+      reject(error);
+    };
+    const onListening = () => {
+      httpServer.removeListener('error', onError);
+      resolve(httpServer);
+    };
+    httpServer.once('error', onError);
+    httpServer.once('listening', onListening);
+  });
+}
+
+async function bindHttpServer() {
+  const port = config.port;
+  try {
+    return await listen(port);
+  } catch (error) {
+    if (error.code !== 'EADDRINUSE') {
+      throw error;
+    }
+
+    if (config.isProduction) {
+      throw new Error(`Port ${port} is already in use`);
+    }
+
+    logger.warn(`Port ${port} is already in use. Freeing it and retrying once...`);
+    freePort(port);
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    return listen(port);
+  }
+}
 
 async function start() {
   try {
@@ -18,10 +56,11 @@ async function start() {
       );
     }
 
-    server = app.listen(config.port, () => {
-      logger.info(`ERP API listening on port ${config.port} [${config.nodeEnv}]`);
-      logger.info(`Health check: http://localhost:${config.port}/api/v1/health`);
-    });
+    server = await bindHttpServer();
+    const address = server.address();
+    const port = typeof address === 'object' && address ? address.port : config.port;
+    logger.info(`ERP API listening on port ${port} [${config.nodeEnv}]`);
+    logger.info(`Health check: http://localhost:${port}/api/v1/health`);
   } catch (error) {
     logger.error('Server failed to start', { message: error.message });
     process.exit(1);
@@ -29,6 +68,8 @@ async function start() {
 }
 
 async function shutdown(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
   logger.info(`${signal} received — shutting down gracefully`);
 
   if (server) {
@@ -60,6 +101,10 @@ process.on('unhandledRejection', (reason) => {
 });
 
 process.on('uncaughtException', (error) => {
+  if (error && error.code === 'EADDRINUSE') {
+    logger.error(`Port ${config.port} is already in use. Stop the other server, then restart.`);
+    process.exit(1);
+  }
   logger.error('Uncaught exception', { message: error.message });
   process.exit(1);
 });
