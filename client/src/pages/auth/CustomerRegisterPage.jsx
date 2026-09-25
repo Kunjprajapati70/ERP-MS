@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Alert,
   Box,
@@ -13,8 +14,10 @@ import {
 } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
+import { customerRegisterSchema } from '../../validators/authSchemas';
 import { registerCustomerRequest } from '../../services/customerPortalService';
 import { setCredentials } from '../../redux/authSlice';
+import { markKnownCustomerAccount } from '../../utils/customerVisit';
 import PasswordField from '../../components/PasswordField';
 
 export default function CustomerRegisterPage() {
@@ -24,13 +27,15 @@ export default function CustomerRegisterPage() {
   const {
     register,
     handleSubmit,
-    formState: { isSubmitting },
+    formState: { errors, isSubmitting },
   } = useForm({
+    resolver: yupResolver(customerRegisterSchema),
     defaultValues: {
       firstName: '',
       lastName: '',
       email: '',
       password: '',
+      confirmPassword: '',
       phone: '',
       company: '',
       city: '',
@@ -40,23 +45,25 @@ export default function CustomerRegisterPage() {
   const onSubmit = async (values) => {
     setSubmitError(null);
     try {
-      const result = await registerCustomerRequest(values);
+      const { confirmPassword, ...payload } = values;
+      const result = await registerCustomerRequest(payload);
       dispatch(setCredentials(result.data));
+      markKnownCustomerAccount();
       toast.success('Welcome! Your customer account is ready.');
       navigate('/customer/dashboard', { replace: true });
     } catch (error) {
-      setSubmitError(error.message || 'Unable to register');
+      const details = error.details?.map((d) => d.message).join(' ') || '';
+      setSubmitError(`${error.message || 'Unable to register'}${details ? `: ${details}` : ''}`);
     }
   };
 
   return (
     <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
       <Typography variant="h5" fontWeight={700} gutterBottom>
-        Customer registration
+        New user registration
       </Typography>
       <Typography color="text.secondary" sx={{ mb: 3 }}>
-        Create a portal account to track orders, invoices, and support requests. Staff roles cannot
-        be selected here.
+        First-time customers must create an account before using the store, orders, and invoices.
       </Typography>
 
       {submitError && (
@@ -67,19 +74,57 @@ export default function CustomerRegisterPage() {
 
       <Stack spacing={2}>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-          <TextField label="First name" fullWidth required {...register('firstName')} />
-          <TextField label="Last name" fullWidth required {...register('lastName')} />
+          <TextField
+            label="First name"
+            fullWidth
+            required
+            {...register('firstName')}
+            error={Boolean(errors.firstName)}
+            helperText={errors.firstName?.message}
+          />
+          <TextField
+            label="Last name"
+            fullWidth
+            required
+            {...register('lastName')}
+            error={Boolean(errors.lastName)}
+            helperText={errors.lastName?.message}
+          />
         </Stack>
-        <TextField label="Email" type="email" fullWidth required {...register('email')} />
+        <TextField
+          label="Email"
+          type="email"
+          fullWidth
+          required
+          {...register('email')}
+          error={Boolean(errors.email)}
+          helperText={errors.email?.message}
+        />
         <PasswordField
           label="Password"
           fullWidth
           required
           autoComplete="new-password"
-          helperText="Min 8 chars with upper, lower, and a number"
           {...register('password')}
+          error={Boolean(errors.password)}
+          helperText={errors.password?.message || 'Min 8 characters with upper, lower, and a number'}
         />
-        <TextField label="Phone" fullWidth {...register('phone')} />
+        <PasswordField
+          label="Confirm password"
+          fullWidth
+          required
+          autoComplete="new-password"
+          {...register('confirmPassword')}
+          error={Boolean(errors.confirmPassword)}
+          helperText={errors.confirmPassword?.message}
+        />
+        <TextField
+          label="Phone"
+          fullWidth
+          {...register('phone')}
+          error={Boolean(errors.phone)}
+          helperText={errors.phone?.message}
+        />
         <TextField label="Company" fullWidth {...register('company')} />
         <TextField label="City" fullWidth {...register('city')} />
         <Button type="submit" variant="contained" size="large" disabled={isSubmitting}>
@@ -87,7 +132,7 @@ export default function CustomerRegisterPage() {
         </Button>
         <Typography variant="body2" textAlign="center">
           Already have an account?{' '}
-          <Link component={RouterLink} to="/login" fontWeight={600}>
+          <Link component={RouterLink} to="/login" fontWeight={700}>
             Sign in
           </Link>
         </Typography>

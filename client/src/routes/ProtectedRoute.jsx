@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { Box, CircularProgress } from '@mui/material';
 import { useSelector } from 'react-redux';
+import { hasKnownCustomerAccount } from '../utils/customerVisit';
 
 export default function ProtectedRoute({ children }) {
   const location = useLocation();
@@ -22,6 +23,10 @@ export default function ProtectedRoute({ children }) {
   }
 
   if (!token) {
+    const visitingCustomerPortal = location.pathname.startsWith('/customer');
+    if (visitingCustomerPortal && !hasKnownCustomerAccount()) {
+      return <Navigate to="/customer/register" replace state={{ from: location }} />;
+    }
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 

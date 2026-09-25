@@ -1,9 +1,11 @@
 import { Box, Card, CardContent, Container, Link, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { Link as RouterLink, Outlet } from 'react-router-dom';
+import { Link as RouterLink, Outlet, useLocation } from 'react-router-dom';
 
 export default function AuthLayout() {
   const appName = import.meta.env.VITE_APP_NAME || 'Enterprise ERP';
+  const { pathname } = useLocation();
+  const onCustomerRegister = pathname === '/customer/register';
 
   return (
     <Box
@@ -44,7 +46,9 @@ export default function AuthLayout() {
             {appName}
           </Typography>
           <Typography color="text.secondary" sx={{ maxWidth: 420, fontSize: { xs: '0.82rem', sm: '0.95rem' } }}>
-            Sign in to manage inventory, sales, finance, HR, and manufacturing in one place.
+            {onCustomerRegister
+              ? 'Create a customer account to shop, place orders, and track invoices.'
+              : 'Sign in to continue. New users can create a customer account below.'}
           </Typography>
         </Stack>
         <Card
@@ -74,17 +78,21 @@ export default function AuthLayout() {
           Need help? Contact your system administrator.
         </Typography>
         <Typography variant="body2" textAlign="center" sx={{ mt: 1 }}>
-          <Link component={RouterLink} to="/login" underline="hover" fontWeight={600}>
-            Sign in
-          </Link>
-          {' · '}
-          <Link component={RouterLink} to="/register" underline="hover" fontWeight={600}>
-            Staff register
-          </Link>
-          {' · '}
-          <Link component={RouterLink} to="/customer/register" underline="hover" fontWeight={600}>
-            Customer portal
-          </Link>
+          {onCustomerRegister ? (
+            <>
+              Already have an account?{' '}
+              <Link component={RouterLink} to="/login" underline="hover" fontWeight={700}>
+                Sign in
+              </Link>
+            </>
+          ) : (
+            <>
+              New user?{' '}
+              <Link component={RouterLink} to="/customer/register" underline="hover" fontWeight={700}>
+                Create an account
+              </Link>
+            </>
+          )}
         </Typography>
       </Container>
     </Box>

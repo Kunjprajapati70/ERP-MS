@@ -32,6 +32,7 @@ import { loginSchema } from '../../validators/authSchemas';
 import { loginRequest } from '../../services/authService';
 import { setCredentials } from '../../redux/authSlice';
 import PasswordField from '../../components/PasswordField';
+import { markKnownCustomerAccount } from '../../utils/customerVisit';
 
 const PINNED_ACCOUNTS = [
   {
@@ -96,6 +97,9 @@ export default function LoginPage() {
     try {
       const result = await loginRequest(values);
       dispatch(setCredentials(result.data));
+      if (result.data?.user?.role?.name === 'CUSTOMER') {
+        markKnownCustomerAccount();
+      }
       toast.success(`Welcome back, ${result.data?.user?.firstName || 'User'}!`);
       const roleName = result.data?.user?.role?.name;
       const fallback = roleName === 'CUSTOMER' ? '/customer/dashboard' : '/dashboard';
@@ -431,6 +435,12 @@ export default function LoginPage() {
             'Sign in'
           )}
         </Button>
+        <Typography variant="body2" textAlign="center" sx={{ pt: 0.5 }}>
+          New user?{' '}
+          <Link component={RouterLink} to="/customer/register" underline="hover" fontWeight={700}>
+            Create an account
+          </Link>
+        </Typography>
       </Stack>
     </Box>
   );
