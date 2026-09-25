@@ -135,11 +135,20 @@ Deploy the API first, then the web app, so the frontend can point at a live `VIT
 | `JWT_SECRET` | long random secret |
 | `JWT_EXPIRES_IN` | `30d` |
 | `APP_TIMEZONE` | `Asia/Kolkata` |
-| `CLIENT_URL` | `https://YOUR-APP.vercel.app` |
-| `CORS_ORIGIN` | `https://YOUR-APP.vercel.app` |
+| `CLIENT_URL` | `https://kunj-erp.vercel.app` |
+| `CORS_ORIGIN` | `https://kunj-erp.vercel.app` |
 | `CORS_ALLOW_VERCEL_PREVIEWS` | `true` |
+| `SMTP_HOST` | `smtp.gmail.com` |
+| `SMTP_PORT` | `587` |
+| `SMTP_USER` | your Gmail address |
+| `SMTP_PASSWORD` | Gmail **App Password** (16 letters, no spaces) |
+| `MAIL_FROM` | `ERP Admin <yourgmail@gmail.com>` |
 
-Optional SMTP keys if you send email. After the frontend URL exists, update `CLIENT_URL` and `CORS_ORIGIN` if you used a placeholder.
+`server/.env` is **not** uploaded to Render. If SMTP vars are missing there, creating a user still works but **no email is sent** (`GET /api/v1/health` → `data.smtp.configured` should be `true`).
+
+Gmail: Google Account → Security → 2-Step Verification → App passwords. Paste that into `SMTP_PASSWORD`. Check Spam/Promotions. After saving env vars, **restart** the Render service.
+
+Creating a CRM customer (Operations → Customers) only saves a party record — it does **not** create a login or send mail. Emails go out when you create a **User** (or a customer self-registers).
 
 ### 2. Vercel — frontend (`client/`)
 
@@ -150,11 +159,13 @@ Optional SMTP keys if you send email. After the frontend URL exists, update `CLI
 
 | Variable | Value |
 |----------|--------|
-| `VITE_API_BASE_URL` | `https://YOUR-RENDER-SERVICE.onrender.com/api/v1` |
+| `VITE_API_BASE_URL` | `https://erp-ms-mwkj.onrender.com/api/v1` |
 | `VITE_APP_NAME` | `Enterprise ERP` |
 | `VITE_APP_TIMEZONE` | `Asia/Kolkata` |
 
-`client/vercel.json` already rewrites SPA routes (`/dashboard`, `/hr/my-attendance`, etc.) to `index.html`.
+The value **must include `/api/v1`**. Using only `https://erp-ms-mwkj.onrender.com` or `.../api` makes login POST `/api/auth/login` and the API returns `Cannot POST /api/auth/login`.
+
+`client/vercel.json` proxies `/api/*` to Render and rewrites SPA routes (`/dashboard`, `/hr/my-attendance`, etc.) to `index.html`.
 
 5. Redeploy the frontend after saving env vars (`VITE_*` is baked in at **build** time).
 6. Paste the Vercel URL into Render `CLIENT_URL` / `CORS_ORIGIN` and update the Render service.

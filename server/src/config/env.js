@@ -34,7 +34,7 @@ const config = {
     port: Number(getEnv('SMTP_PORT', 587)),
     user: getEnv('SMTP_USER', ''),
     password: getEnv('SMTP_PASSWORD', ''),
-    from: getEnv('MAIL_FROM', 'ERP System <noreply@example.com>'),
+    from: getEnv('MAIL_FROM', getEnv('SMTP_USER', 'ERP System <noreply@example.com>')),
   },
   payment: {
     keyId: getEnv('PAYMENT_KEY_ID', ''),

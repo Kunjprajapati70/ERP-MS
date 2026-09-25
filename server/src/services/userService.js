@@ -99,7 +99,6 @@ async function createUser(payload, actor, req) {
     metadata: {
       email: user.email,
       role: role.name,
-      credentialsEmailed: true,
       customerProfileLinked: role.name === ROLES.CUSTOMER,
     },
     req,
@@ -117,8 +116,7 @@ async function createUser(payload, actor, req) {
     link: role.name === ROLES.CUSTOMER ? '/customer/dashboard' : '/',
   });
 
-  // Fire-and-forget: email login ID + temporary password (never log the password)
-  sendEmail({
+  const emailResult = await sendEmail({
     to: user.email,
     subject: 'Your Enterprise ERP login credentials',
     html: adminCreatedUserCredentialsTemplate({
@@ -126,22 +124,26 @@ async function createUser(payload, actor, req) {
       email: user.email,
       password: plainPassword,
       roleName: role.displayName || role.name,
-      loginUrl:
-        role.name === ROLES.CUSTOMER
-          ? `${config.clientUrl}/login`
-          : `${config.clientUrl}/login`,
+      loginUrl: `${config.clientUrl}/login`,
     }),
-  }).then((result) => {
-    if (result?.failed || result?.skipped) {
-      logger.warn('Admin-created user credentials email not delivered', {
-        email: user.email,
-        skipped: Boolean(result?.skipped),
-        failed: Boolean(result?.failed),
-      });
-    }
   });
 
-  return sanitizeUser(user);
+  if (emailResult?.failed || emailResult?.skipped) {
+    logger.warn('Admin-created user credentials email not delivered', {
+      email: user.email,
+      skipped: Boolean(emailResult?.skipped),
+      failed: Boolean(emailResult?.failed),
+    });
+  }
+
+  return {
+    user: sanitizeUser(user),
+    emailDelivery: {
+      sent: Boolean(emailResult && !emailResult.skipped && !emailResult.failed),
+      skipped: Boolean(emailResult?.skipped),
+      failed: Boolean(emailResult?.failed),
+    },
+  };
 }
 
 async function updateUser(id, payload, actor, req) {

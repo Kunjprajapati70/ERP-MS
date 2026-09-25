@@ -2,6 +2,7 @@ const express = require('express');
 const asyncHandler = require('../utils/asyncHandler');
 const { getDatabaseStatus } = require('../config/db');
 const config = require('../config/env');
+const { getSmtpStatus } = require('../services/mailService');
 
 const router = express.Router();
 
@@ -25,6 +26,7 @@ router.get(
         timestamp: new Date().toISOString(),
         uptimeSeconds: Math.floor(process.uptime()),
         database: db,
+        smtp: getSmtpStatus(),
       },
     });
   })

@@ -113,6 +113,8 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/v1', apiRoutes);
+// Clients that omit /v1 (e.g. VITE_API_BASE_URL=...onrender.com/api) still hit login.
+app.use('/api', apiRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

@@ -146,8 +146,17 @@ export default function UsersPage() {
         await updateUser(editing._id, payload);
         toast.success('User updated');
       } else {
-        await createUser(values);
-        toast.success('User created — login credentials emailed to the user');
+        const result = await createUser(values);
+        const emailed = result.data?.emailDelivery?.sent;
+        if (emailed) {
+          toast.success(result.message || 'User created and credentials emailed');
+        } else {
+          toast.success('User created');
+          toast.warning(
+            result.message ||
+              'Credentials email was not sent. Add SMTP_HOST, SMTP_USER, SMTP_PASSWORD, and MAIL_FROM on Render, then restart the API.'
+          );
+        }
       }
       setDialogOpen(false);
       load();
